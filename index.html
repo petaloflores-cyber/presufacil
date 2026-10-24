@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -26,9 +27,7 @@
       text-align: center;
     }
 
-    p {
-      line-height: 1.5;
-    }
+    p { line-height: 1.5; }
 
     label {
       display: block;
@@ -56,10 +55,14 @@
       color: white;
       font-size: 16px;
       font-weight: bold;
+      cursor: pointer;
     }
+
+    #compartir { background: #128c7e; }
 
     #resultado {
       white-space: pre-wrap;
+      overflow-wrap: anywhere;
       background: #f2f5f3;
       padding: 12px;
       margin-top: 18px;
@@ -72,18 +75,26 @@
     <h1>PresuFácil 📋</h1>
     <p>Prepará un presupuesto y compartilo por WhatsApp.</p>
 
+    <label for="negocio">Tu nombre o negocio</label>
+    <input id="negocio" placeholder="Ej.: Juan Electricidad">
+
     <label for="cliente">Nombre del cliente</label>
     <input id="cliente" placeholder="Ej.: Juan Pérez">
+
+    <label for="fecha">Fecha del presupuesto</label>
+    <input id="fecha" type="date">
 
     <label for="trabajo">Trabajo a realizar</label>
     <textarea id="trabajo" rows="3"
       placeholder="Describí el trabajo"></textarea>
 
     <label for="manoObra">Mano de obra ($)</label>
-    <input id="manoObra" type="number" min="0" step="0.01" value="0">
+    <input id="manoObra" type="number"
+      min="0" step="0.01" value="0">
 
     <label for="materiales">Materiales ($)</label>
-    <input id="materiales" type="number" min="0" step="0.01" value="0">
+    <input id="materiales" type="number"
+      min="0" step="0.01" value="0">
 
     <label for="telefono">WhatsApp del cliente (opcional)</label>
     <input id="telefono" type="tel"
@@ -103,21 +114,50 @@
   <script>
     let mensajePresupuesto = "";
 
+    // Coloca la fecha local de hoy.
+    const hoy = new Date();
+    const fechaLocal = new Date(
+      hoy.getTime() - hoy.getTimezoneOffset() * 60000
+    ).toISOString().slice(0, 10);
+
+    document.getElementById("fecha").value = fechaLocal;
+
     function generarPresupuesto() {
-      const cliente = document.getElementById("cliente").value.trim();
-      const trabajo = document.getElementById("trabajo").value.trim();
-      const manoObra = Number(document.getElementById("manoObra").value);
-      const materiales = Number(document.getElementById("materiales").value);
-      const telefono = document.getElementById("telefono").value.trim();
+      const negocio =
+        document.getElementById("negocio").value.trim();
+      const cliente =
+        document.getElementById("cliente").value.trim();
+      const fecha =
+        document.getElementById("fecha").value;
+      const trabajo =
+        document.getElementById("trabajo").value.trim();
+      const manoInput =
+        document.getElementById("manoObra").value;
+      const materialesInput =
+        document.getElementById("materiales").value;
+      const manoObra = Number(manoInput);
+      const materiales = Number(materialesInput);
+      const telefono =
+        document.getElementById("telefono").value.trim();
+
+      if (!negocio) {
+        alert("Ingresá tu nombre o el de tu negocio.");
+        return;
+      }
 
       if (!trabajo) {
-        alert("Por favor, describí el trabajo a realizar.");
+        alert("Describí el trabajo a realizar.");
+        return;
+      }
+
+      if (!fecha) {
+        alert("Seleccioná la fecha del presupuesto.");
         return;
       }
 
       if (
-        document.getElementById("manoObra").value === "" ||
-        document.getElementById("materiales").value === "" ||
+        !manoInput.trim() ||
+        !materialesInput.trim() ||
         !Number.isFinite(manoObra) ||
         !Number.isFinite(materiales) ||
         manoObra < 0 ||
@@ -128,21 +168,32 @@
       }
 
       const total = manoObra + materiales;
+
       const formato = new Intl.NumberFormat("es-AR", {
         style: "currency",
         currency: "ARS"
       });
 
+      const fechaPartes = fecha.split("-");
+      const fechaMostrar =
+        fechaPartes[2] + "/" +
+        fechaPartes[1] + "/" +
+        fechaPartes[0];
+
       mensajePresupuesto =
         "📋 PRESUPUESTO - PresuFácil\n\n" +
+        "Profesional: " + negocio + "\n" +
         "Cliente: " + (cliente || "No especificado") + "\n" +
-        "Trabajo: " + trabajo + "\n" +
+        "Fecha: " + fechaMostrar + "\n\n" +
+        "Trabajo a realizar:\n" + trabajo + "\n\n" +
         "Mano de obra: " + formato.format(manoObra) + "\n" +
         "Materiales: " + formato.format(materiales) + "\n" +
+        "--------------------------\n" +
         "TOTAL: " + formato.format(total) + "\n\n" +
         "Gracias por tu consulta.";
 
-      document.getElementById("resultado").textContent = mensajePresupuesto;
+      document.getElementById("resultado").textContent =
+        mensajePresupuesto;
       document.getElementById("resultado").hidden = false;
       document.getElementById("compartir").hidden = false;
 
@@ -159,8 +210,10 @@
       const numero = telefono.replace(/\D/g, "");
 
       const url = numero
-        ? "https://wa.me/" + numero + "?text=" + encodeURIComponent(mensajePresupuesto)
-        : "https://wa.me/?text=" + encodeURIComponent(mensajePresupuesto);
+        ? "https://wa.me/" + numero +
+          "?text=" + encodeURIComponent(mensajePresupuesto)
+        : "https://wa.me/?text=" +
+          encodeURIComponent(mensajePresupuesto);
 
       window.open(url, "_blank");
     }
