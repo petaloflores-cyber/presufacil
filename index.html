@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PresuFácil WhatsApp</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 500px;
+      margin: 30px auto;
+      padding: 20px;
+      background: #f2f5f3;
+      color: #222;
+    }
+
+    .card {
+      background: white;
+      padding: 22px;
+      border-radius: 14px;
+      box-shadow: 0 2px 12px #0001;
+    }
+
+    h1 {
+      color: #16834a;
+      text-align: center;
+    }
+
+    p {
+      line-height: 1.5;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    input, textarea {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 12px;
+      margin-top: 6px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 18px;
+      border: none;
+      border-radius: 8px;
+      background: #16834a;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    #resultado {
+      white-space: pre-wrap;
+      background: #f2f5f3;
+      padding: 12px;
+      margin-top: 18px;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>PresuFácil 📋</h1>
+    <p>Prepará un presupuesto y compartilo por WhatsApp.</p>
+
+    <label for="cliente">Nombre del cliente</label>
+    <input id="cliente" placeholder="Ej.: Juan Pérez">
+
+    <label for="trabajo">Trabajo a realizar</label>
+    <textarea id="trabajo" rows="3"
+      placeholder="Describí el trabajo"></textarea>
+
+    <label for="manoObra">Mano de obra ($)</label>
+    <input id="manoObra" type="number" min="0" step="0.01" value="0">
+
+    <label for="materiales">Materiales ($)</label>
+    <input id="materiales" type="number" min="0" step="0.01" value="0">
+
+    <label for="telefono">WhatsApp del cliente (opcional)</label>
+    <input id="telefono" type="tel"
+      placeholder="Ej.: 54911XXXXXXXX">
+
+    <button onclick="generarPresupuesto()">
+      Generar presupuesto
+    </button>
+
+    <div id="resultado" hidden></div>
+
+    <button id="compartir" hidden onclick="compartirWhatsApp()">
+      Enviar por WhatsApp
+    </button>
+  </div>
+
+  <script>
+    let mensajePresupuesto = "";
+
+    function generarPresupuesto() {
+      const cliente = document.getElementById("cliente").value.trim();
+      const trabajo = document.getElementById("trabajo").value.trim();
+      const manoObra = Number(document.getElementById("manoObra").value);
+      const materiales = Number(document.getElementById("materiales").value);
+      const telefono = document.getElementById("telefono").value.trim();
+
+      if (!trabajo) {
+        alert("Por favor, describí el trabajo a realizar.");
+        return;
+      }
+
+      if (
+        document.getElementById("manoObra").value === "" ||
+        document.getElementById("materiales").value === "" ||
+        !Number.isFinite(manoObra) ||
+        !Number.isFinite(materiales) ||
+        manoObra < 0 ||
+        materiales < 0
+      ) {
+        alert("Ingresá importes válidos, iguales o mayores que cero.");
+        return;
+      }
+
+      const total = manoObra + materiales;
+      const formato = new Intl.NumberFormat("es-AR", {
+        style: "currency",
+        currency: "ARS"
+      });
+
+      mensajePresupuesto =
+        "📋 PRESUPUESTO - PresuFácil\n\n" +
+        "Cliente: " + (cliente || "No especificado") + "\n" +
+        "Trabajo: " + trabajo + "\n" +
+        "Mano de obra: " + formato.format(manoObra) + "\n" +
+        "Materiales: " + formato.format(materiales) + "\n" +
+        "TOTAL: " + formato.format(total) + "\n\n" +
+        "Gracias por tu consulta.";
+
+      document.getElementById("resultado").textContent = mensajePresupuesto;
+      document.getElementById("resultado").hidden = false;
+      document.getElementById("compartir").hidden = false;
+
+      window.telefonoPresupuesto = telefono;
+    }
+
+    function compartirWhatsApp() {
+      if (!mensajePresupuesto) {
+        alert("Primero generá el presupuesto.");
+        return;
+      }
+
+      const telefono = window.telefonoPresupuesto || "";
+      const numero = telefono.replace(/\D/g, "");
+
+      const url = numero
+        ? "https://wa.me/" + numero + "?text=" + encodeURIComponent(mensajePresupuesto)
+        : "https://wa.me/?text=" + encodeURIComponent(mensajePresupuesto);
+
+      window.open(url, "_blank");
+    }
+  </script>
+</body>
+</html>
