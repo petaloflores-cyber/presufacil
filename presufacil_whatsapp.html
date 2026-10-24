@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#146c43">
+<title>PresuFácil WhatsApp</title>
+<style>
+:root{--green:#146c43;--green2:#198754;--ink:#17211b;--muted:#66736b;--line:#dce5df;--bg:#f3f7f4;--white:#fff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--ink)}
+header{background:var(--green);color:#fff;padding:22px 16px 25px}header .wrap,main{max-width:850px;margin:auto}
+.brand{font-size:1.35rem;font-weight:800;letter-spacing:-.4px}.sub{opacity:.9;font-size:.94rem;margin-top:5px}
+main{padding:16px 12px 40px}.card{background:var(--white);border:1px solid var(--line);border-radius:16px;padding:17px;margin-bottom:14px;box-shadow:0 3px 12px #173c2510}
+h2{font-size:1.03rem;margin:0 0 13px}label{display:block;font-size:.84rem;color:#4b5b51;font-weight:650;margin:0 0 5px}
+input,textarea,select{width:100%;border:1px solid #cbd8cf;border-radius:10px;padding:11px 12px;font:inherit;font-size:.96rem;background:#fff;color:var(--ink)}
+input:focus,textarea:focus{outline:2px solid #a6d6b9;border-color:var(--green2)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{min-width:0}.field.full{grid-column:1/-1}
+.items-head,.item-row{display:grid;grid-template-columns:minmax(0,1fr) 74px 108px 36px;gap:7px;align-items:center}
+.items-head{font-size:.74rem;color:var(--muted);margin:3px 0 6px}.item-row{margin-bottom:8px}.item-row input{padding:10px 8px;min-width:0}
+.remove{border:0;background:#fbe9e7;color:#a1281d;border-radius:9px;height:40px;font-size:1.1rem}
+.btn{border:0;border-radius:11px;padding:12px 15px;font:inherit;font-weight:750;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px}
+.btn-primary{background:var(--green);color:#fff}.btn-secondary{background:#e7f2eb;color:var(--green)}.btn-outline{background:#fff;border:1px solid var(--line);color:var(--ink)}
+.actions{display:flex;flex-wrap:wrap;gap:9px}.actions .btn{flex:1}
+.totalbox{background:#eef7f0;border-radius:12px;padding:13px 14px;margin:13px 0}.total-line{display:flex;justify-content:space-between;gap:12px;padding:4px 0;color:#45564b}.total-line strong{color:var(--ink)}.grand{border-top:1px solid #c8dfcf;margin-top:6px;padding-top:10px;font-size:1.2rem;font-weight:850;color:var(--green)}
+.note{font-size:.82rem;color:var(--muted);line-height:1.45}.preview{white-space:pre-wrap;background:#f8faf8;border:1px dashed #cbd8cf;border-radius:10px;padding:13px;font-size:.9rem;line-height:1.5;overflow-wrap:anywhere}
+footer{text-align:center;color:var(--muted);font-size:.8rem;padding:0 12px 24px}
+@media(max-width:540px){.grid{grid-template-columns:1fr 1fr}.item-row{grid-template-columns:minmax(0,1fr) 54px 88px 32px;gap:5px}.items-head{grid-template-columns:minmax(0,1fr) 54px 88px 32px;gap:5px}.card{padding:14px}.actions{display:grid;grid-template-columns:1fr 1fr}.actions .btn{width:100%}}
+@media print{body{background:#fff}header,.no-print,footer{display:none!important}main{padding:0;max-width:none}.card{box-shadow:none;border:0;padding:0;margin:0 0 16px}.preview{border:0;padding:0;background:#fff}.print-only{display:block!important}}
+</style>
+</head>
+<body>
+<header><div class="wrap"><div class="brand">🧾 PresuFácil WhatsApp</div><div class="sub">Armá un presupuesto claro y compartilo con tu cliente en segundos.</div></div></header>
+<main>
+<section class="card">
+<h2>1. Datos de tu negocio</h2>
+<div class="grid">
+<div class="field"><label for="business">Nombre del negocio</label><input id="business" placeholder="Ej. Servicios Juan"></div>
+<div class="field"><label for="phone">Tu teléfono (opcional)</label><input id="phone" placeholder="Ej. 341 555 1234"></div>
+<div class="field full"><label for="terms">Condiciones / forma de pago</label><input id="terms" value="Forma de pago a convenir"></div>
+</div>
+</section>
+<section class="card">
+<h2>2. Datos del cliente</h2>
+<div class="grid">
+<div class="field"><label for="client">Nombre del cliente</label><input id="client" placeholder="Nombre y apellido"></div>
+<div class="field"><label for="clientPhone">WhatsApp del cliente (opcional)</label><input id="clientPhone" inputmode="tel" placeholder="Código de área y número"></div>
+<div class="field"><label for="validity">Validez del presupuesto</label><select id="validity"><option>7 días</option><option>10 días</option><option>15 días</option><option>30 días</option><option>Válido por hoy</option></select></div>
+<div class="field"><label for="number">N.º de presupuesto</label><input id="number" value="001"></div>
+</div>
+</section>
+<section class="card">
+<h2>3. Productos o trabajos</h2>
+<div class="items-head"><span>Descripción</span><span>Cant.</span><span>Precio unit.</span><span></span></div>
+<div id="items"></div>
+<button class="btn btn-secondary no-print" id="add">＋ Agregar concepto</button>
+<div class="grid" style="margin-top:14px">
+<div class="field"><label for="discount">Descuento (%)</label><input id="discount" type="number" min="0" max="100" step="0.1" value="0"></div>
+<div class="field"><label for="currency">Moneda</label><select id="currency"><option value="ARS">Pesos argentinos (ARS)</option><option value="USD">Dólares (USD)</option></select></div>
+</div>
+<div class="totalbox">
+<div class="total-line"><span>Subtotal</span><strong id="subtotal">$ 0</strong></div>
+<div class="total-line"><span>Descuento</span><strong id="discountAmount">$ 0</strong></div>
+<div class="total-line grand"><span>TOTAL</span><span id="total">$ 0</span></div>
+</div>
+<div class="field"><label for="notes">Notas adicionales (opcional)</label><textarea id="notes" rows="2" placeholder="Materiales incluidos, fecha estimada, etc."></textarea></div>
+</section>
+<section class="card">
+<h2>4. Vista previa</h2>
+<div class="preview" id="preview"></div>
+<div class="actions no-print" style="margin-top:13px">
+<button class="btn btn-primary" id="whatsapp">Compartir por WhatsApp</button>
+<button class="btn btn-secondary" id="copy">Copiar texto</button>
+<button class="btn btn-outline" id="pdf">Imprimir / Guardar PDF</button>
+</div>
+<p class="note no-print" style="margin-bottom:0">Tus datos se guardan solamente en este dispositivo. El botón de WhatsApp abre la aplicación o WhatsApp Web con el mensaje preparado; vos revisás y lo enviás.</p>
+</section>
+</main>
+<footer>PresuFácil WhatsApp · Versión inicial gratuita</footer>
+<script>
+const $=id=>document.getElementById(id);
+const money=n=>new Intl.NumberFormat('es-AR',{style:'currency',currency:$('currency').value,maximumFractionDigits:2}).format(Number(n)||0);
+let nextId=0;
+function addItem(desc='',qty=1,price=''){
+ const id=++nextId, row=document.createElement('div'); row.className='item-row'; row.dataset.id=id;
+ row.innerHTML=`<input aria-label="Descripción" class="desc" placeholder="Ej. Mano de obra" value="${escapeHtml(desc)}"><input aria-label="Cantidad" class="qty" type="number" min="0" step="any" value="${qty}"><input aria-label="Precio unitario" class="price" type="number" min="0" step="any" placeholder="0" value="${price}"><button class="remove no-print" title="Eliminar concepto" aria-label="Eliminar concepto">×</button>`;
+ row.querySelectorAll('input').forEach(el=>el.addEventListener('input',update));
+ row.querySelector('.remove').addEventListener('click',()=>{row.remove();if(!$('items').children.length)addItem();update()});
+ $('items').appendChild(row);update();
+}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function getData(){
+ const rows=[...document.querySelectorAll('.item-row')].map(r=>({desc:r.querySelector('.desc').value.trim(),qty:Math.max(0,Number(r.querySelector('.qty').value)||0),price:Math.max(0,Number(r.querySelector('.price').value)||0)})).filter(x=>x.desc||x.price);
+ const subtotal=rows.reduce((s,x)=>s+x.qty*x.price,0), pct=Math.min(100,Math.max(0,Number($('discount').value)||0)), disc=subtotal*pct/100;
+ return {rows,subtotal,disc,total:subtotal-disc};
+}
+function buildText(){
+ const d=getData(), business=$('business').value.trim()||'Mi negocio', client=$('client').value.trim()||'Cliente', cur=$('currency').value;
+ let lines=[`PRESUPUESTO N.º ${$('number').value.trim()||'001'}`,business];
+ if($('phone').value.trim())lines.push(`Contacto: ${$('phone').value.trim()}`);
+ lines.push('',`Cliente: ${client}`,'','Detalle:');
+ d.rows.forEach(x=>lines.push(`• ${x.desc||'Concepto'} — ${x.qty} x ${money(x.price)} = ${money(x.qty*x.price)}`));
+ if(!d.rows.length)lines.push('• A definir');
+ lines.push('',`Subtotal: ${money(d.subtotal)}`);
+ if(d.disc>0)lines.push(`Descuento (${Math.min(100,Math.max(0,Number($('discount').value)||0))}%): -${money(d.disc)}`);
+ lines.push(`TOTAL: ${money(d.total)}`,'',`Validez: ${$('validity').value}`);
+ if($('terms').value.trim())lines.push(`Condiciones: ${$('terms').value.trim()}`);
+ if($('notes').value.trim())lines.push(`Notas: ${$('notes').value.trim()}`);
+ lines.push('','Gracias por tu consulta.');
+ return lines.join('\n');
+}
+function update(){
+ const d=getData();$('subtotal').textContent=money(d.subtotal);$('discountAmount').textContent='−'+money(d.disc);$('total').textContent=money(d.total);
+ const text=buildText();$('preview').textContent=text;save();
+}
+function save(){
+ try{const fields=['business','phone','terms','client','clientPhone','validity','number','discount','currency','notes'];const data={};fields.forEach(k=>data[k]=$(k).value);data.items=[...document.querySelectorAll('.item-row')].map(r=>[r.querySelector('.desc').value,r.querySelector('.qty').value,r.querySelector('.price').value]);localStorage.setItem('presufacil-v1',JSON.stringify(data))}catch(e){}
+}
+function load(){
+ try{const d=JSON.parse(localStorage.getItem('presufacil-v1')||'null');if(!d)return;
+ ['business','phone','terms','client','clientPhone','validity','number','discount','currency','notes'].forEach(k=>{if(d[k]!==undefined)$(k).value=d[k]});
+ $('items').innerHTML='';(d.items||[]).forEach(x=>addItem(x[0],x[1],x[2]));}catch(e){}
+}
+$('add').addEventListener('click',()=>addItem());
+$('discount').addEventListener('input',update);
+['business','phone','terms','client','clientPhone','validity','number','currency','notes'].forEach(k=>$(k).addEventListener('input',update));
+$('whatsapp').addEventListener('click',()=>{
+ const num=$('clientPhone').value.replace(/\D/g,'');
+ const url='https://wa.me/'+(num?num:'')+'?text='+encodeURIComponent(buildText());
+ window.open(url,'_blank','noopener,noreferrer');
+});
+$('copy').addEventListener('click',async()=>{
+ try{await navigator.clipboard.writeText(buildText());$('copy').textContent='¡Copiado!';setTimeout(()=>$('copy').textContent='Copiar texto',1600)}
+ catch(e){const range=document.createRange();range.selectNodeContents($('preview'));const sel=window.getSelection();sel.removeAllRanges();sel.addRange(range);alert('Seleccioná y copiá el texto de la vista previa.')}
+});
+$('pdf').addEventListener('click',()=>window.print());
+load();if(!$('items').children.length){addItem('Materiales',1,'');addItem('Mano de obra',1,'')}update();
+</script>
+</body>
+</html>
